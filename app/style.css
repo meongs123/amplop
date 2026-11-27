@@ -137,11 +137,11 @@ h3 { font-size: 16px; margin: 0; }
 
 /* Tables */
 .table-scroll { overflow-x: auto; }
-.ledger { width: 100%; border-collapse: collapse; font-size: 14.5px; }
-.ledger caption { text-align: left; color: var(--muted); font-size: 13px; padding-bottom: 6px; }
-.ledger th, .ledger td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.ledger th { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
-.ledger td:last-child, .ledger th:last-child { text-align: right; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tbl caption { text-align: left; color: var(--muted); font-size: 13px; padding-bottom: 6px; }
+.tbl th, .tbl td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.tbl th { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+.tbl td:last-child, .tbl th:last-child { text-align: right; }
 .amt-in { color: var(--green); font-weight: 600; white-space: nowrap; }
 .amt-out { white-space: nowrap; }
 

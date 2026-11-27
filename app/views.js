@@ -21,7 +21,7 @@ function txRows(txs, envById) {
 }
 
 function txTable(txs, envById, caption) {
-  return `<table class="ledger"><caption>${caption}</caption><thead><tr><th>Date</th><th>What</th><th>Envelope</th><th>Paid with</th><th class="num">Amount</th></tr></thead><tbody>${txRows(txs, envById)}</tbody></table>`;
+  return `<table class="tbl"><caption>${caption}</caption><thead><tr><th>Date</th><th>What</th><th>Envelope</th><th>Paid with</th><th class="num">Amount</th></tr></thead><tbody>${txRows(txs, envById)}</tbody></table>`;
 }
 
 function envById(state) {
@@ -244,7 +244,7 @@ export function netWorth(state) {
   <div class="grid-2">
     <section class="card">
       <h2>Assets — ${fmtRp(t.assetsTotal)}</h2>
-      <table class="ledger"><thead><tr><th>Asset</th><th class="num">Value</th></tr></thead><tbody>
+      <table class="tbl"><thead><tr><th>Asset</th><th class="num">Value</th></tr></thead><tbody>
       ${state.assets.map((a) => `<tr><td>${esc(a.name)}<br><span class="muted">${esc(a.note || '')}</span></td><td class="num">${fmtRp(a.amount)}</td></tr>`).join('')}
       </tbody></table>
       <form data-action="add-asset" class="form-row stack">
@@ -255,7 +255,7 @@ export function netWorth(state) {
     </section>
     <section class="card">
       <h2>Debts — ${fmtRp(t.debtsTotal)}</h2>
-      <table class="ledger"><thead><tr><th>Debt</th><th class="num">Owed</th></tr></thead><tbody>
+      <table class="tbl"><thead><tr><th>Debt</th><th class="num">Owed</th></tr></thead><tbody>
       ${state.liabilities.map((l) => `<tr><td>${esc(l.name)}<br><span class="muted">${esc(l.note || '')}</span></td><td class="num">${fmtRp(l.amount)}</td></tr>`).join('')}
       </tbody></table>
       <form data-action="add-liability" class="form-row stack">
@@ -292,7 +292,7 @@ export function transactions(state, ui) {
   const maxSpent = Math.max(...spentRows.map((x) => x.value), 1);
   return `<section class="page-head">
     <h1>Transactions &amp; Reports</h1>
-    <p class="lede">${state.transactions.length} rows in the November ledger — ${state.transactions.filter((x) => x.type === 'expense').length} purchases and ${state.transactions.filter((x) => x.type === 'income').length} income. Add one and every total moves.</p>
+    <p class="lede">${state.transactions.length} rows in the November record — ${state.transactions.filter((x) => x.type === 'expense').length} purchases and ${state.transactions.filter((x) => x.type === 'income').length} income. Add one and every total moves.</p>
   </section>
   <section class="card">
     <h2>Add a transaction</h2>
@@ -306,7 +306,7 @@ export function transactions(state, ui) {
     </form>
   </section>
   <section class="card">
-    <h2>Ledger — ${rows.length} of ${state.transactions.length} rows</h2>
+    <h2>Transactions — ${rows.length} of ${state.transactions.length} rows</h2>
     <form data-action="filter" class="form-row filters">
       <label>Envelope<select name="env" data-filter>${envOpts}</select></label>
       <label>Search<input name="q" type="search" placeholder="Search merchant…" value="${esc(ui.q || '')}" data-filter></label>
@@ -316,7 +316,7 @@ export function transactions(state, ui) {
         <option value="amount-asc"${ui.sort === 'amount-asc' ? ' selected' : ''}>Smallest amount</option>
       </select></label>
     </form>
-    <div class="table-scroll">${txTable(rows, byId, `Ledger, ${rows.length} rows shown`)}</div>
+    <div class="table-scroll">${txTable(rows, byId, `Transactions, ${rows.length} rows shown`)}</div>
   </section>
   <div class="grid-2">
     <section class="card">
@@ -331,7 +331,7 @@ export function transactions(state, ui) {
     </section>
     <section class="card">
       <h2>November vs October</h2>
-      <table class="ledger"><thead><tr><th></th><th class="num">October</th><th class="num">November</th><th class="num">Change</th></tr></thead><tbody>
+      <table class="tbl"><thead><tr><th></th><th class="num">October</th><th class="num">November</th><th class="num">Change</th></tr></thead><tbody>
       <tr><td>Income</td><td class="num">${fmtRp(oct.income)}</td><td class="num">${fmtRp(t.income)}</td><td class="num">${fmtRp(t.income - oct.income)}</td></tr>
       <tr><td>Spent on living</td><td class="num">${fmtRp(oct.spent)}</td><td class="num">${fmtRp(t.spentLiving)}</td><td class="num txt-good">${fmtRp(t.spentLiving - oct.spent)}</td></tr>
       <tr><td>Saved &amp; invested</td><td class="num">${fmtRp(oct.saved)}</td><td class="num">${fmtRp(t.savedInvested)}</td><td class="num txt-good">+${fmtRp(t.savedInvested - oct.saved)}</td></tr>

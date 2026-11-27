@@ -27,7 +27,7 @@ function loadState() {
 let state = loadState();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* storage full or blocked: keep in-memory state */ } };
 
-// Filter/sort UI state for the ledger (not persisted).
+// Filter/sort UI state for the transaction list (not persisted).
 const ui = { env: '', q: '', sort: 'date-desc' };
 
 function route() {
@@ -149,7 +149,7 @@ document.addEventListener('submit', (ev) => {
   }
 });
 
-// Ledger filters re-render live, keeping the typed search text.
+// Transaction filters re-render live, keeping the typed search text.
 document.addEventListener('input', (ev) => {
   const el = ev.target;
   if (!el.matches('[data-filter]')) return;

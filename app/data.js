@@ -31,7 +31,7 @@ export const SAMPLE = {
     { id: 'investments', name: 'Investments', assigned: 2850000, kind: 'invest', note: 'Invested this month' },
   ],
 
-  // 3 income rows + 48 spending rows = 51 ledger rows. The spending rows
+  // 3 income rows + 48 spending rows = 51 rows. The spending rows
   // per envelope sum exactly to that envelope's Spent column in the plan.
   transactions: [
     // --- Income ---

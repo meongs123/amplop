@@ -99,7 +99,7 @@ try:
         # Filter: envelope=kitchen
         page.select_option('select[name="env"]', "kitchen")
         page.wait_for_timeout(300)
-        print("FILTER kitchen rows text:", page.locator("h2", has_text="Ledger —").inner_text())
+        print("FILTER kitchen rows text:", page.locator("h2", has_text="Transactions —").inner_text())
         page.select_option('select[name="env"]', "")
         page.wait_for_timeout(300)
         # Add account

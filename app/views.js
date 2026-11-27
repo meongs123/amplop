@@ -25,7 +25,7 @@ function txRows(txs, envById) {
 }
 
 function txTable(txs, envById, caption) {
-  return `<table class="tbl"><caption>${caption}</caption><thead><tr><th>Date</th><th>What</th><th>Envelope</th><th>Paid with</th><th class="num">Amount</th></tr></thead><tbody>${txRows(txs, envById)}</tbody></table>`;
+  return `<table class="tbl ledger"><caption>${caption}</caption><thead><tr><th>Date</th><th>What</th><th>Envelope</th><th>Paid with</th><th class="num">Amount</th></tr></thead><tbody>${txRows(txs, envById)}</tbody></table>`;
 }
 
 function envById(state) {
@@ -305,15 +305,14 @@ export function transactions(state, ui) {
     <p class="lede">${state.transactions.length} rows in the November record — ${state.transactions.filter((x) => x.type === 'expense').length} purchases and ${state.transactions.filter((x) => x.type === 'income').length} income. Add one and every total moves.</p>
   </section>
   <section class="card">
-    <h2>Add a transaction</h2>
-    <form data-action="add-tx" class="form-row">
-      <label>Date<input name="date" type="date" value="2026-11-27" min="2026-11-01" max="2026-11-30" required></label>
-      <label>What<input name="merchant" type="text" maxlength="60" placeholder="e.g. Indomaret — groceries" required></label>
-      <label>Envelope<select name="envelope">${state.envelopes.filter((e) => e.kind === 'spending').map((e) => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></label>
-      <label>Amount (Rp)<input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="50000" required></label>
-      <label>Paid with<select name="method"><option>BCA Main</option><option>BCA Savings</option><option>GoPay</option><option>OVO</option><option>DANA</option><option>Cash</option></select></label>
-      <button class="btn" type="submit">Add transaction</button>
-    </form>
+    <h2>50 / 30 / 20 check</h2>
+    <p class="lede-sm gauge-sum">Needs ${fmtPct(r.needsPct, 0)} · Wants ${fmtPct(r.wantsPct, 0)} · Savings ${fmtPct(r.savingsPct, 0)} — of ${fmtRp(r.total)} assigned.</p>
+    ${hbars([
+      { label: 'Needs (target 50%)', value: r.needs, text: `${fmtRp(r.needs)} · ${fmtPct(r.needsPct)}`, color: '#7DD3FC' },
+      { label: 'Wants (target 30%)', value: r.wants, text: `${fmtRp(r.wants)} · ${fmtPct(r.wantsPct)}`, color: '#FBBF24' },
+      { label: 'Savings (target 20%)', value: r.savings, text: `${fmtRp(r.savings)} · ${fmtPct(r.savingsPct)}`, color: '#4ADE80' },
+    ], r.total)}
+    <p class="fine"><strong>Needs run high — Jakarta rent.</strong> Housing alone is ${fmtRp(3500000)}. The family still saves ${fmtPct(r.savingsPct)} — above the 20% target — because every rupiah is assigned first.</p>
   </section>
   <section class="card">
     <h2>Transactions — ${rows.length} of ${state.transactions.length} rows</h2>
@@ -328,29 +327,28 @@ export function transactions(state, ui) {
     </form>
     <div class="table-scroll">${txTable(rows, byId, `Transactions, ${rows.length} rows shown`)}</div>
   </section>
-  <div class="grid-2">
-    <section class="card">
-      <h2>50 / 30 / 20 check</h2>
-      <p class="lede-sm">Needs ${fmtPct(r.needsPct, 0)} · Wants ${fmtPct(r.wantsPct, 0)} · Savings ${fmtPct(r.savingsPct, 0)} — of ${fmtRp(r.total)} assigned.</p>
-      ${hbars([
-        { label: 'Needs (target 50%)', value: r.needs, text: `${fmtRp(r.needs)} · ${fmtPct(r.needsPct)}`, color: '#7DD3FC' },
-        { label: 'Wants (target 30%)', value: r.wants, text: `${fmtRp(r.wants)} · ${fmtPct(r.wantsPct)}`, color: '#FBBF24' },
-        { label: 'Savings (target 20%)', value: r.savings, text: `${fmtRp(r.savings)} · ${fmtPct(r.savingsPct)}`, color: '#4ADE80' },
-      ], r.total)}
-      <p class="fine"><strong>Needs run high — Jakarta rent.</strong> Housing alone is ${fmtRp(3500000)}. The family still saves ${fmtPct(r.savingsPct)} — above the 20% target — because every rupiah is assigned first.</p>
-    </section>
-    <section class="card">
-      <h2>November vs October</h2>
-      <table class="tbl"><thead><tr><th></th><th class="num">October</th><th class="num">November</th><th class="num">Change</th></tr></thead><tbody>
-      <tr><td>Income</td><td class="num">${fmtRp(oct.income)}</td><td class="num">${fmtRp(t.income)}</td><td class="num">${fmtDelta(t.income - oct.income)}</td></tr>
-      <tr><td>Spent on living</td><td class="num">${fmtRp(oct.spent)}</td><td class="num">${fmtRp(t.spentLiving)}</td><td class="num txt-good">${fmtDelta(t.spentLiving - oct.spent)}</td></tr>
-      <tr><td>Saved &amp; invested</td><td class="num">${fmtRp(oct.saved)}</td><td class="num">${fmtRp(t.savedInvested)}</td><td class="num txt-good">${fmtDelta(t.savedInvested - oct.saved)}</td></tr>
-      <tr><td>Left unspent</td><td class="num">${fmtRp(oct.left)}</td><td class="num">${fmtRp(t.leftSpending)}</td><td class="num">${fmtDelta(t.leftSpending - oct.left)}</td></tr>
-      <tr><td>Net worth</td><td class="num">${fmtRp(oct.netWorth)}</td><td class="num">${fmtRp(t.netWorth)}</td><td class="num txt-good">${fmtDelta(t.netWorth - oct.netWorth)}</td></tr>
-      </tbody></table>
-      <p class="fine">November spent ${fmtRp(Math.abs(t.spentLiving - oct.spent))} less than October; saved ${fmtRp(t.savedInvested - oct.saved)} more.</p>
-    </section>
-  </div>
+  <section class="card">
+    <h2>Add a transaction</h2>
+    <form data-action="add-tx" class="form-row">
+      <label>Date<input name="date" type="date" value="2026-11-27" min="2026-11-01" max="2026-11-30" required></label>
+      <label>What<input name="merchant" type="text" maxlength="60" placeholder="e.g. Indomaret — groceries" required></label>
+      <label>Envelope<select name="envelope">${state.envelopes.filter((e) => e.kind === 'spending').map((e) => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></label>
+      <label>Amount (Rp)<input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="50000" required></label>
+      <label>Paid with<select name="method"><option>BCA Main</option><option>BCA Savings</option><option>GoPay</option><option>OVO</option><option>DANA</option><option>Cash</option></select></label>
+      <button class="btn" type="submit">Add transaction</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>November vs October</h2>
+    <table class="tbl"><thead><tr><th></th><th class="num">October</th><th class="num">November</th><th class="num">Change</th></tr></thead><tbody>
+    <tr><td>Income</td><td class="num">${fmtRp(oct.income)}</td><td class="num">${fmtRp(t.income)}</td><td class="num">${fmtDelta(t.income - oct.income)}</td></tr>
+    <tr><td>Spent on living</td><td class="num">${fmtRp(oct.spent)}</td><td class="num">${fmtRp(t.spentLiving)}</td><td class="num txt-good">${fmtDelta(t.spentLiving - oct.spent)}</td></tr>
+    <tr><td>Saved &amp; invested</td><td class="num">${fmtRp(oct.saved)}</td><td class="num">${fmtRp(t.savedInvested)}</td><td class="num txt-good">${fmtDelta(t.savedInvested - oct.saved)}</td></tr>
+    <tr><td>Left unspent</td><td class="num">${fmtRp(oct.left)}</td><td class="num">${fmtRp(t.leftSpending)}</td><td class="num">${fmtDelta(t.leftSpending - oct.left)}</td></tr>
+    <tr><td>Net worth</td><td class="num">${fmtRp(oct.netWorth)}</td><td class="num">${fmtRp(t.netWorth)}</td><td class="num txt-good">${fmtDelta(t.netWorth - oct.netWorth)}</td></tr>
+    </tbody></table>
+    <p class="fine">November spent ${fmtRp(Math.abs(t.spentLiving - oct.spent))} less than October; saved ${fmtRp(t.savedInvested - oct.saved)} more.</p>
+  </section>
   <section class="card">
     <h2>Spending by envelope</h2>
     ${hbars(spentRows, maxSpent)}

@@ -194,6 +194,22 @@ input[type="date"] { min-height: 42px; }
 }
 @media (max-width: 640px) {
   .wrap { padding: 14px; }
+  .card { padding: 14px 16px; }
+  /* Phone compaction for #/transactions (shot 4, 390x844): the ledger
+     filter fits one row, the gauge summary line (a duplicate of the bar
+     values) and the redundant table caption are hidden, so the ledger
+     rows + the 50/30/20 bars both fit in the first viewport. Desktop
+     keeps the full layout. */
+  .form-row.filters label { flex: 1 1 0; min-width: 0; }
+  .gauge-sum { display: none; }
+  .tbl caption { display: none; }
+  .hbar-row { padding: 2px 0; }
+  /* Ledger table: hide the least-important "Paid with" column on phones
+     and tighten cells, so Date / What / Envelope / Amount all fit the
+     390px frame (incl. the Amount numbers) instead of scrolling. */
+  .tbl.ledger th:nth-child(4), .tbl.ledger td:nth-child(4) { display: none; }
+  .tbl.ledger { font-size: 13.5px; }
+  .tbl.ledger th, .tbl.ledger td { padding: 6px 4px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .stat-value { font-size: 24px; }
   .env-grid, .acct-grid { grid-template-columns: 1fr; }

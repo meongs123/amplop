@@ -11,6 +11,10 @@ function statCard(label, value, sub, cls = '') {
   return `<div class="stat ${cls}"><div class="stat-label">${label}</div><div class="stat-value">${value}</div><div class="stat-sub">${sub}</div></div>`;
 }
 
+function fmtDelta(d) {
+  return `${d > 0 ? '+' : ''}${fmtRp(d)}`;
+}
+
 function txRows(txs, envById) {
   return txs.map((t) => {
     const env = t.envelope ? envById[t.envelope] : null;
@@ -51,7 +55,7 @@ function envCard(state, env) {
     <p class="env-note">${esc(env.note)}</p>
     <div class="env-nums"><div><span>Assigned</span><strong>${fmtRp(env.assigned)}</strong></div><div><span>${spentLabel}</span><strong>${fmtRp(spent)}</strong></div><div><span>Left</span><strong class="${st.cls === 'bad' ? 'txt-bad' : ''}">${fmtRp(left)}</strong></div></div>
     <div class="bar"><span class="${barCls}" style="width:${pct.toFixed(1)}%"></span></div>
-    <div class="env-pct">${fmtPct(pct, 0)} used</div></a>`;
+    <div class="env-pct">${fmtPct(pct, 0)} of available used · Available ${fmtRp(avail)}</div></a>`;
 }
 
 // ---------------- Dashboard ----------------
@@ -73,12 +77,12 @@ export function dashboard(state) {
   return `<section class="page-head">
     <p class="kicker">The Wijaya Household · Jakarta · ${esc(state.household.month)} — Day ${state.household.day} of ${state.household.daysInMonth}</p>
     <h1>Every Rupiah Has a Job.</h1>
-    <p class="lede">Zero-based envelope budgeting for one Jakarta family: all ${fmtRp(t.income)} of November income is assigned to an envelope — spending, saving or investing — until nothing is left unassigned.</p>
+    <p class="lede">All ${fmtRp(t.income)} of November income is assigned to an envelope — spending, saving or investing.</p>
   </section>
   <section class="stats" aria-label="November headline figures">
     ${statCard('Monthly income', fmtRp(t.income), 'Salary Andi + Salary Sari + freelance', 'hl')}
     ${statCard('Assigned', fmtRp(t.assigned), '100% of income, 12 envelopes', 'hl')}
-    ${statCard('Unassigned', fmtRp(t.unassigned), 'Every rupiah has a job ✓', 'hl zero')}
+    ${statCard('Unassigned', fmtRp(t.unassigned), 'Every rupiah has a job&nbsp;✓', 'hl zero')}
     ${statCard('Spent on living', fmtRp(t.spentLiving), '48 purchases, 1–27 Nov', '')}
     ${statCard('Saved & invested', fmtRp(t.savedInvested), 'Emergency Rp2.000.000 + Investments Rp2.850.000', 'hl')}
   </section>
@@ -87,9 +91,24 @@ export function dashboard(state) {
     <div class="zb-bar" role="img" aria-label="Assigned budget split: spent on living, saved and invested, left in envelopes">
       <span class="zb-spent" style="width:${zeroPct.toFixed(1)}%"></span><span class="zb-saved" style="width:${savedPct.toFixed(1)}%"></span><span class="zb-leftseg" style="width:${leftPct.toFixed(1)}%"></span>
     </div>
-    <div class="zb-legend"><span><i class="sw-blue"></i>Spent on living ${fmtRp(t.spentLiving)} (${fmtPct(zeroPct, 0)})</span><span><i class="sw-green"></i>Saved &amp; invested ${fmtRp(t.savedInvested)} (${fmtPct(savedPct, 0)})</span><span><i class="sw-yellow"></i>Still in envelopes ${fmtRp(t.leftSpending)} (${fmtPct(leftPct, 0)})</span></div>
+    <div class="zb-legend"><span><i class="sw-blue"></i>Spent on living ${fmtRp(t.spentLiving)} (${fmtPct(zeroPct, 1)})</span><span><i class="sw-green"></i>Saved &amp; invested ${fmtRp(t.savedInvested)} (${fmtPct(savedPct, 1)})</span><span><i class="sw-yellow"></i>Still in envelopes ${fmtRp(t.leftSpending)} (${fmtPct(leftPct, 1)})</span></div>
     <p class="fine">Income ${fmtRp(t.income)} = spent ${fmtRp(t.spentLiving)} + saved ${fmtRp(t.savedInvested)} + left ${fmtRp(t.leftSpending)}. The Emergency Fund ${fmtRp(2000000)} sits inside “saved”, so it is never double-counted.</p>
   </section>
+  <div class="grid-2">
+    <section class="card">
+      <h2>Accounts <a class="hlink" href="#/accounts">All accounts →</a></h2>
+      <p class="big-total">${fmtRp(t.accountsTotal)} <span>across ${state.accounts.length} accounts</span></p>
+      ${hbars(state.accounts.map((a) => ({ label: a.name, value: a.balance, text: fmtRp(a.balance) })), t.accountsTotal)}
+      <p class="fine">Banks, e-wallets (GoPay, OVO, DANA) and cash — one total, updated everywhere.</p>
+    </section>
+    <section class="card">
+      <h2>Net worth <a class="hlink" href="#/net-worth">Net worth →</a></h2>
+      <p class="big-total">${fmtRp(t.netWorth)} <span class="txt-good">▲ ${t.netWorthDelta >= 0 ? '+' : ''}${fmtRp(t.netWorthDelta)} in November</span></p>
+      <p>Assets ${fmtRp(t.assetsTotal)} − debts ${fmtRp(t.debtsTotal)}. Gold, mutual funds and the apartment, minus the mortgage, motorbike loan and credit card.</p>
+      <p class="fine">Six-month trend: ${fmtRp(state.trend[0].value)} (Jun) → ${fmtRp(t.netWorth)} (Nov), ${t.netWorth - state.trend[0].value >= 0 ? '+' : ''}${fmtRp(t.netWorth - state.trend[0].value)}.</p>
+      <p class="fine">Bills: ${paidBills} of ${state.bills.length} paid. Next: ${esc(upcoming.name)} ${fmtRp(upcoming.amount)}, due ${fmtDate(upcoming.due)}. <a href="#/transactions">Bills &amp; reports →</a></p>
+    </section>
+  </div>
   <div class="grid-2">
     <section class="card">
       <h2>Where the money went</h2>
@@ -102,21 +121,6 @@ export function dashboard(state) {
       <p class="fine"><strong class="txt-bad">Snacks is empty.</strong> It ran out on 20 Nov and was topped up with ${fmtRp(150000)} moved in from Entertainment — the envelope rule, in action.</p>
     </section>
   </div>
-  <div class="grid-2">
-    <section class="card">
-      <h2>Accounts <a class="hlink" href="#/accounts">All accounts →</a></h2>
-      <p class="big-total">${fmtRp(t.accountsTotal)} <span>across ${state.accounts.length} accounts</span></p>
-      ${hbars(state.accounts.map((a) => ({ label: a.name, value: a.balance, text: fmtRp(a.balance) })), t.accountsTotal)}
-      <p class="fine">Banks, e-wallets (GoPay, OVO, DANA) and cash — one total, updated everywhere.</p>
-    </section>
-    <section class="card">
-      <h2>Net worth <a class="hlink" href="#/net-worth">Net worth →</a></h2>
-      <p class="big-total">${fmtRp(t.netWorth)} <span class="txt-good">▲ +${fmtRp(t.netWorthDelta)} in November</span></p>
-      <p>Assets ${fmtRp(t.assetsTotal)} − debts ${fmtRp(t.debtsTotal)}. Gold, mutual funds and the apartment, minus the mortgage, motorbike loan and credit card.</p>
-      <p class="fine">Six-month trend: ${fmtRp(state.trend[0].value)} (Jun) → ${fmtRp(t.netWorth)} (Nov), +${fmtRp(t.netWorth - state.trend[0].value)}.</p>
-      <p class="fine">Bills: ${paidBills} of ${state.bills.length} paid. Next: ${esc(upcoming.name)} ${fmtRp(upcoming.amount)}, due ${fmtDate(upcoming.due)}. <a href="#/transactions">Bills &amp; reports →</a></p>
-    </section>
-  </div>
   <section class="card">
     <h2>Latest transactions</h2>
     ${txTable(recent, byId, 'Most recent 8 of 51 transactions')}
@@ -125,7 +129,9 @@ export function dashboard(state) {
 
 // ---------------- Envelopes ----------------
 export function envelopes(state) {
-  const opts = state.envelopes.map((e) => `<option value="${e.id}">${esc(e.name)}</option>`).join('');
+  const t = computeTotals(state);
+  const optsFrom = state.envelopes.map((e) => `<option value="${e.id}"${e.id === 'entertainment' ? ' selected' : ''}>${esc(e.name)}</option>`).join('');
+  const optsTo = state.envelopes.map((e) => `<option value="${e.id}"${e.id === 'snacks' ? ' selected' : ''}>${esc(e.name)}</option>`).join('');
   const log = [...state.transfers].reverse().map((tr) => {
     const from = state.envelopes.find((e) => e.id === tr.from);
     const to = state.envelopes.find((e) => e.id === tr.to);
@@ -138,8 +144,8 @@ export function envelopes(state) {
   <section class="card">
     <h2>Move funds between envelopes</h2>
     <form data-action="move-funds" class="form-row">
-      <label>From<select name="from" required>${opts}</select></label>
-      <label>To<select name="to" required>${opts}</select></label>
+      <label>From<select name="from" required>${optsFrom}</select></label>
+      <label>To<select name="to" required>${optsTo}</select></label>
       <label>Amount (Rp)<input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="150000" required></label>
       <label>Note<input name="note" type="text" maxlength="80" placeholder="Why the move?"></label>
       <button class="btn" type="submit">Move funds</button>
@@ -150,7 +156,8 @@ export function envelopes(state) {
     <h2>Transfer log</h2>
     <ul class="transfer-log">${log || '<li>No transfers yet.</li>'}</ul>
   </section>
-  <section class="env-grid">${state.envelopes.map((e) => envCard(state, e)).join('')}</section>`;
+  <section class="env-grid">${state.envelopes.map((e) => envCard(state, e)).join('')}</section>
+  <p class="fine">Left across all 12 envelopes is ${fmtRp(t.leftTotal)} — that includes the ${fmtRp(2000000)} Emergency Fund, which is counted under “saved” on the dashboard, so it is never double-counted.</p>`;
 }
 
 export function envelopeDetail(state, id) {
@@ -225,7 +232,7 @@ export function netWorth(state) {
   </section>
   <section class="stats">
     ${statCard('Net worth', fmtRp(t.netWorth), 'Assets − debts', 'hl')}
-    ${statCard('Change in November', `+${fmtRp(t.netWorthDelta)}`, `+${fmtPct(t.netWorthDeltaPct, 2)} vs October`, 'hl')}
+    ${statCard('Change in November', `${t.netWorthDelta >= 0 ? '+' : ''}${fmtRp(t.netWorthDelta)}`, `${t.netWorthDeltaPct >= 0 ? '+' : ''}${fmtPct(t.netWorthDeltaPct, 2)} vs October`, 'hl')}
     ${statCard('Assets', fmtRp(t.assetsTotal), `${state.assets.length} items`, '')}
     ${statCard('Debts', fmtRp(t.debtsTotal), `${state.liabilities.length} items`, '')}
   </section>
@@ -238,7 +245,7 @@ export function netWorth(state) {
     <section class="card">
       <h2>Six-month trend</h2>
       ${lineChart(points)}
-      <p class="fine">Jun ${fmtRp(state.trend[0].value)} → Nov ${fmtRp(t.netWorth)}: +${fmtRp(t.netWorth - state.trend[0].value)} (+${fmtPct(((t.netWorth - state.trend[0].value) / state.trend[0].value) * 100)}) in six months.</p>
+      <p class="fine">Jun ${fmtRp(state.trend[0].value)} → Nov ${fmtRp(t.netWorth)}: ${t.netWorth - state.trend[0].value >= 0 ? '+' : ''}${fmtRp(t.netWorth - state.trend[0].value)} (${t.netWorth - state.trend[0].value >= 0 ? '+' : ''}${fmtPct(((t.netWorth - state.trend[0].value) / state.trend[0].value) * 100)}) in six months.</p>
     </section>
   </div>
   <div class="grid-2">
@@ -277,7 +284,10 @@ export function transactions(state, ui) {
   if (ui.env) rows = rows.filter((x) => (ui.env === 'income' ? x.type === 'income' : x.envelope === ui.env));
   if (ui.q) {
     const q = ui.q.toLowerCase();
-    rows = rows.filter((x) => `${x.merchant} ${x.method || ''}`.toLowerCase().includes(q));
+    rows = rows.filter((x) => {
+      const env = x.envelope ? byId[x.envelope] : null;
+      return `${x.merchant} ${env ? env.name : 'Income'} ${x.method || ''}`.toLowerCase().includes(q);
+    });
   }
   rows.sort((a, b) => {
     if (ui.sort === 'amount-desc') return b.amount - a.amount;
@@ -301,7 +311,7 @@ export function transactions(state, ui) {
       <label>What<input name="merchant" type="text" maxlength="60" placeholder="e.g. Indomaret — groceries" required></label>
       <label>Envelope<select name="envelope">${state.envelopes.filter((e) => e.kind === 'spending').map((e) => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></label>
       <label>Amount (Rp)<input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="50000" required></label>
-      <label>Paid with<select name="method"><option>BCA Main</option><option>GoPay</option><option>OVO</option><option>DANA</option><option>Cash</option></select></label>
+      <label>Paid with<select name="method"><option>BCA Main</option><option>BCA Savings</option><option>GoPay</option><option>OVO</option><option>DANA</option><option>Cash</option></select></label>
       <button class="btn" type="submit">Add transaction</button>
     </form>
   </section>
@@ -332,13 +342,13 @@ export function transactions(state, ui) {
     <section class="card">
       <h2>November vs October</h2>
       <table class="tbl"><thead><tr><th></th><th class="num">October</th><th class="num">November</th><th class="num">Change</th></tr></thead><tbody>
-      <tr><td>Income</td><td class="num">${fmtRp(oct.income)}</td><td class="num">${fmtRp(t.income)}</td><td class="num">${fmtRp(t.income - oct.income)}</td></tr>
-      <tr><td>Spent on living</td><td class="num">${fmtRp(oct.spent)}</td><td class="num">${fmtRp(t.spentLiving)}</td><td class="num txt-good">${fmtRp(t.spentLiving - oct.spent)}</td></tr>
-      <tr><td>Saved &amp; invested</td><td class="num">${fmtRp(oct.saved)}</td><td class="num">${fmtRp(t.savedInvested)}</td><td class="num txt-good">+${fmtRp(t.savedInvested - oct.saved)}</td></tr>
-      <tr><td>Left unspent</td><td class="num">${fmtRp(oct.left)}</td><td class="num">${fmtRp(t.leftSpending)}</td><td class="num">${fmtRp(t.leftSpending - oct.left)}</td></tr>
-      <tr><td>Net worth</td><td class="num">${fmtRp(oct.netWorth)}</td><td class="num">${fmtRp(t.netWorth)}</td><td class="num txt-good">+${fmtRp(t.netWorth - oct.netWorth)}</td></tr>
+      <tr><td>Income</td><td class="num">${fmtRp(oct.income)}</td><td class="num">${fmtRp(t.income)}</td><td class="num">${fmtDelta(t.income - oct.income)}</td></tr>
+      <tr><td>Spent on living</td><td class="num">${fmtRp(oct.spent)}</td><td class="num">${fmtRp(t.spentLiving)}</td><td class="num txt-good">${fmtDelta(t.spentLiving - oct.spent)}</td></tr>
+      <tr><td>Saved &amp; invested</td><td class="num">${fmtRp(oct.saved)}</td><td class="num">${fmtRp(t.savedInvested)}</td><td class="num txt-good">${fmtDelta(t.savedInvested - oct.saved)}</td></tr>
+      <tr><td>Left unspent</td><td class="num">${fmtRp(oct.left)}</td><td class="num">${fmtRp(t.leftSpending)}</td><td class="num">${fmtDelta(t.leftSpending - oct.left)}</td></tr>
+      <tr><td>Net worth</td><td class="num">${fmtRp(oct.netWorth)}</td><td class="num">${fmtRp(t.netWorth)}</td><td class="num txt-good">${fmtDelta(t.netWorth - oct.netWorth)}</td></tr>
       </tbody></table>
-      <p class="fine">November spent ${fmtRp(Math.abs(t.spentLiving - oct.spent))} less than October — mostly fewer snacks after the envelope ran out on 20 Nov.</p>
+      <p class="fine">November spent ${fmtRp(Math.abs(t.spentLiving - oct.spent))} less than October; saved ${fmtRp(t.savedInvested - oct.saved)} more.</p>
     </section>
   </div>
   <section class="card">
@@ -347,7 +357,7 @@ export function transactions(state, ui) {
     <p class="fine">Housing, Kitchen and School &amp; Kids are two-thirds of living costs. Snacks overspent its ${fmtRp(600000)} assignment — covered by the ${fmtRp(150000)} move from Entertainment.</p>
   </section>
   <section class="card">
-    <h2>Bills — ${state.bills.filter((b) => b.status === 'paid').length} paid, 1 upcoming</h2>
+    <h2>Bills — ${state.bills.filter((b) => b.status === 'paid').length} paid, ${state.bills.filter((b) => b.status === 'upcoming').length} upcoming</h2>
     <ul class="bill-list">${state.bills.map((b) => `<li><span>${esc(b.name)}</span><span>${fmtRp(b.amount)}</span><span class="badge ${b.status === 'paid' ? 'ok' : 'warn'}">${b.status === 'paid' ? 'Paid' : 'Upcoming'}</span><span class="muted">due ${fmtDate(b.due)}</span></li>`).join('')}</ul>
   </section>`;
 }

@@ -123,7 +123,7 @@ export const SAMPLE = {
   ],
   liabilities: [
     { name: 'Mortgage', amount: 285000000, note: 'Apartment loan' },
-    { name: 'Motorbike loan', amount: 12500000, note: 'After the November payment' },
+    { name: 'Motorbike loan', amount: 12500000, note: 'After the November payment of Rp875.000 (5 Nov)' },
     { name: 'Credit card', amount: 1850000, note: 'BCA card, due 10 Dec' },
   ],
 
@@ -137,14 +137,17 @@ export const SAMPLE = {
     { month: 'Nov', value: 263315500 },
   ],
 
-  // 8 bills: 7 paid + 1 upcoming (December rent, due 1 Dec).
+  // 7 bills: 6 paid + 1 upcoming (December rent, due 1 Dec).
+  // The November motorbike installment (Rp875.000, paid 5 Nov) is a loan
+  // payment, not a household bill: it lives on the debt side — the
+  // motorbike loan balance above is already after that payment — so it
+  // is not listed here and has no ledger row.
   bills: [
     { name: 'Rent — November', amount: 3500000, due: '2026-11-01', status: 'paid', envelope: 'housing' },
     { name: 'Electricity & Water', amount: 812400, due: '2026-11-20', status: 'paid', envelope: 'electricity-water' },
     { name: 'Internet', amount: 350000, due: '2026-11-10', status: 'paid', envelope: 'internet-phone' },
     { name: 'Mobile', amount: 162000, due: '2026-11-15', status: 'paid', envelope: 'internet-phone' },
     { name: 'School fees', amount: 1200000, due: '2026-11-03', status: 'paid', envelope: 'school-kids' },
-    { name: 'Motorbike installment', amount: 875000, due: '2026-11-05', status: 'paid', envelope: 'fuel-transport' },
     { name: 'BPJS Health', amount: 150000, due: '2026-11-10', status: 'paid', envelope: 'health' },
     { name: 'Rent — December', amount: 3500000, due: '2026-12-01', status: 'upcoming', envelope: 'housing' },
   ],

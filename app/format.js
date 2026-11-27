@@ -5,7 +5,7 @@ export function fmtRp(n) {
   const v = Math.round(Number(n) || 0);
   const sign = v < 0 ? '-' : '';
   const digits = String(Math.abs(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `Rp${sign}${digits}`;
+  return `${sign}Rp${digits}`;
 }
 
 export function fmtNum(n) {

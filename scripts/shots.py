@@ -110,7 +110,7 @@ try:
         page.click('form[data-action="add-account"] button[type="submit"]')
         page.wait_for_function("window.__shotReady === true", timeout=20000)
         total = page.locator(".big-total").first.inner_text()
-        print("ADD-ACCOUNT total now:", total.replace("\n", " ")[:80], "| expect Rp20.638.956:", "Rp20.638.956" in total)
+        print("ADD-ACCOUNT total now:", total.replace("\n", " ")[:80], "| expect Rp20.588.956 (20.515.500 - 50.000 add-tx debit + 123.456):", "Rp20.588.956" in total)
         # Add asset on net worth
         page.goto("http://localhost:8080/#/net-worth", wait_until="load")
         page.wait_for_function("window.__shotReady === true", timeout=20000)
@@ -119,7 +119,9 @@ try:
         page.click('form[data-action="add-asset"] button[type="submit"]')
         page.wait_for_function("window.__shotReady === true", timeout=20000)
         nw = page.locator(".stat-value").first.inner_text()
-        print("ADD-ASSET net worth now:", nw, "| expect Rp264.438.956 (263.315.500 + 123.456 account + 1.000.000 asset):", nw == "Rp264.438.956")
+        print("ADD-ASSET net worth now:", nw, "| expect Rp264.388.956 (263.315.500 - 50.000 add-tx debit + 123.456 account + 1.000.000 asset):", nw == "Rp264.388.956")
+        trend_nov = (page.locator(".chart-value").last.text_content() or "").strip()
+        print("ADD-ASSET trend Nov label now:", trend_nov, "| expect Rp264.388.956:", trend_nov == "Rp264.388.956")
         # Reset
         page.evaluate("() => localStorage.clear()")
         browser.close()

@@ -4,6 +4,7 @@
 // script when the page has rendered.
 
 import { SAMPLE } from './data.js';
+import { computeTotals, envelopeRemaining } from './totals.js';
 import { dashboard, envelopes, envelopeDetail, accounts, netWorth, transactions, notFound } from './views.js';
 
 const KEY = 'amplop-v1';
@@ -26,6 +27,20 @@ function loadState() {
 
 let state = loadState();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* storage full or blocked: keep in-memory state */ } };
+
+// Keep the "Cash & bank" asset in sync with the accounts total.
+function syncCashAsset() {
+  const cash = state.assets.find((a) => a.name === 'Cash & bank');
+  if (cash) cash.amount = state.accounts.reduce((a, x) => a + x.balance, 0);
+}
+
+// Keep the November trend point in sync with the computed net worth,
+// so the chart and its delta always describe the current state.
+function syncTrend() {
+  if (state.trend && state.trend.length) {
+    state.trend[state.trend.length - 1].value = computeTotals(state).netWorth;
+  }
+}
 
 // Filter/sort UI state for the transaction list (not persisted).
 const ui = { env: '', q: '', sort: 'date-desc' };
@@ -100,6 +115,9 @@ document.addEventListener('submit', (ev) => {
     const to = String(data.get('to') || '');
     const amount = num('amount');
     if (!from || !to || from === to || amount <= 0) { alert('Pick two different envelopes and an amount above Rp0.'); return; }
+    const fromEnv = state.envelopes.find((e) => e.id === from);
+    const left = fromEnv ? envelopeRemaining(state, fromEnv) : 0;
+    if (amount > left) { alert(`Only Rp${left.toLocaleString('id-ID')} left in ${fromEnv ? fromEnv.name : from} — pick a smaller amount.`); return; }
     state.transfers.push({ date: '2026-11-27', from, to, amount, note: String(data.get('note') || '').slice(0, 80) });
     save();
     render();
@@ -117,6 +135,14 @@ document.addEventListener('submit', (ev) => {
       type: 'expense',
       method: String(data.get('method') || 'Cash'),
     });
+    // Debit the account used to pay, and keep the Cash & bank asset
+    // and the November trend point in sync with the new net worth.
+    const method = String(data.get('method') || 'Cash');
+    const acctName = method === 'Cash' ? 'Cash in wallet' : method;
+    const acct = state.accounts.find((a) => a.name === acctName);
+    if (acct) acct.balance -= amount;
+    syncCashAsset();
+    syncTrend();
     save();
     location.hash = '#/transactions';
     render();
@@ -126,8 +152,8 @@ document.addEventListener('submit', (ev) => {
     if (!name || balance < 0) { alert('Give the account a name and a balance of Rp0 or more.'); return; }
     state.accounts.push({ name, type: String(data.get('type') || 'Other'), balance });
     // Cash & bank asset tracks the accounts total.
-    const cash = state.assets.find((a) => a.name === 'Cash & bank');
-    if (cash) cash.amount = state.accounts.reduce((a, x) => a + x.balance, 0);
+    syncCashAsset();
+    syncTrend();
     save();
     render();
   } else if (action === 'add-asset') {
@@ -135,6 +161,7 @@ document.addEventListener('submit', (ev) => {
     const amount = num('amount');
     if (!name || amount <= 0) { alert('Give the asset a name and a value above Rp0.'); return; }
     state.assets.push({ name, amount, note: 'Added by you' });
+    syncTrend();
     save();
     render();
   } else if (action === 'add-liability') {
@@ -142,6 +169,7 @@ document.addEventListener('submit', (ev) => {
     const amount = num('amount');
     if (!name || amount <= 0) { alert('Give the debt a name and an amount above Rp0.'); return; }
     state.liabilities.push({ name, amount, note: 'Added by you' });
+    syncTrend();
     save();
     render();
   } else if (action === 'filter') {
